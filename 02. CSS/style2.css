@@ -1,0 +1,19 @@
+h2 {
+    color: magenta;
+}
+
+p {
+    color: white;
+    background-color: black;
+}
+
+h1 {
+    color: black;
+}
+
+.boxmodel {
+    font-size: 150%;
+    border: 5px solid rebeccapurple;
+    display: inline-block;
+    padding: 5px 20px 5px 20px;
+}
