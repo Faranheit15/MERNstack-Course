@@ -1,0 +1,194 @@
+[faran@megatron ~]$ systemctl start postgresql                
+[faran@megatron ~]$ sudo -i -u postgres                                      
+[sudo] password for faran: 
+[postgres@megatron ~]$ \l
+-bash: l: command not found
+[postgres@megatron ~]$ \l
+-bash: l: command not found
+[postgres@megatron ~]$ \dt
+-bash: dt: command not found
+[postgres@megatron ~]$ \d 'test'
+-bash: d: command not found
+[postgres@megatron ~]$ psql 'test'
+psql (12.3)
+Type "help" for help.
+
+test=# \d
+         List of relations
+ Schema | Name  | Type  |  Owner   
+--------+-------+-------+----------
+ public | users | table | postgres
+(1 row)
+
+test=# INSERT INTO users (name, age, birthday) VALUES ('Faran', 31, '1999-05-15');
+INSERT 0 1
+test=# SELECT * FROM users;
+ name  | age |  birthday  
+-------+-----+------------
+ Faran |  31 | 1999-05-15
+(1 row)
+
+test=# INSERT INTO users (name, age, birthday) VALUES ('Flash', 51, '1999-04-04');
+INSERT 0 1
+test=# SELECT * FROM users;
+ name  | age |  birthday  
+-------+-----+------------
+ Faran |  31 | 1999-05-15
+ Flash |  51 | 1999-04-04
+(2 rows)
+
+test=# INSERT INTO users (name, age, birthday) VALUES ('Sally', 76, '1993-11-22');
+INSERT 0 1
+test=# ALTER TABLE users ADD score smallint;
+ALTER TABLE
+test=# UPDATE users SET score=50 WHERE name='Faran';
+UPDATE 1
+test=# SELECT * FROM users;
+ name  | age |  birthday  | score 
+-------+-----+------------+-------
+ Flash |  51 | 1999-04-04 |      
+ Sally |  76 | 1993-11-22 |      
+ Faran |  31 | 1999-05-15 |    50
+(3 rows)
+
+test=# UPDATE users SET score=100 WHERE name='Flash' AND name='Sally';      
+UPDATE 0
+test=# UPDATE users SET score=100 WHERE name='Flash' OR name='Sally'; 
+UPDATE 2
+test=# SELECT * FROM users;
+ name  | age |  birthday  | score 
+-------+-----+------------+-------
+ Faran |  31 | 1999-05-15 |    50
+ Flash |  51 | 1999-04-04 |   100
+ Sally |  76 | 1993-11-22 |   100
+(3 rows)
+
+test=# INSERT INTO users (name, age, birthday,score) VALUES ('Amy', 15, '1935-04-04',88);
+INSERT 0 1
+test=# SELECT * FROM users;
+ name  | age |  birthday  | score 
+-------+-----+------------+-------
+ Faran |  31 | 1999-05-15 |    50
+ Flash |  51 | 1999-04-04 |   100
+ Sally |  76 | 1993-11-22 |   100
+ Amy   |  15 | 1935-04-04 |    88
+(4 rows)
+
+test=# SELECT * FROM users WHERE name LIKE 'F%';
+ name  | age |  birthday  | score 
+-------+-----+------------+-------
+ Faran |  31 | 1999-05-15 |    50
+ Flash |  51 | 1999-04-04 |   100
+(2 rows)
+
+test=# SELECT * FROM users ORDER BY score DESC;               
+ name  | age |  birthday  | score 
+-------+-----+------------+-------
+ Flash |  51 | 1999-04-04 |   100
+ Sally |  76 | 1993-11-22 |   100
+ Amy   |  15 | 1935-04-04 |    88
+ Faran |  31 | 1999-05-15 |    50
+(4 rows)
+
+test=# SELECT * FROM users ORDER BY score ASC; 
+ name  | age |  birthday  | score 
+-------+-----+------------+-------
+ Faran |  31 | 1999-05-15 |    50
+ Amy   |  15 | 1935-04-04 |    88
+ Flash |  51 | 1999-04-04 |   100
+ Sally |  76 | 1993-11-22 |   100
+(4 rows)
+
+test=# SELECT AVG(score) FROM users;
+         avg         
+---------------------
+ 84.5000000000000000
+(1 row)
+
+test=# SELECT SUM(age) FROM users;
+ sum 
+-----
+ 173
+(1 row)
+
+test=# SELECT COUNT(name) FROM users;       
+ count 
+-------
+     4
+(1 row)
+
+test=# CREATE TABLE login(ID serial NOT NULL PRIMARY KEY, secret VARCHAR (100) NOT NULL, name text UNIQUE NOT NULL);
+CREATE TABLE
+test=# SELECT * FROM login;                                                   id | secret | name 
+----+--------+------
+(0 rows)
+
+test=# INSERT INTO login(secret, name) VALUES ('abc','Faran');               INSERT 0 1
+test=# SELECT * FROM login;                                   
+ id | secret | name  
+----+--------+-------
+  1 | abc    | Faran
+(1 row)
+
+test=# INSERT INTO login(secret, name) VALUES ('xyz','Sally');
+INSERT 0 1
+test=# INSERT INTO login(secret, name) VALUES ('xyz','Sally');
+ERROR:  duplicate key value violates unique constraint "login_name_key"
+DETAIL:  Key (name)=(Sally) already exists.
+test=# INSERT INTO login(secret, name) VALUES ('lol','John'); 
+INSERT 0 1
+test=# SELECT * FROM login;                                   
+ id | secret | name  
+----+--------+-------
+  1 | abc    | Faran
+  2 | xyz    | Sally
+  4 | lol    | John
+(3 rows)
+
+test=# INSERT INTO login(secret, name) VALUES ('kkk','Flash');
+INSERT 0 1
+test=# SELECT * FROM login;                                   
+ id | secret | name  
+----+--------+-------
+  1 | abc    | Faran
+  2 | xyz    | Sally
+  4 | lol    | John
+  5 | kkk    | Flash
+(4 rows)
+
+test=# \d
+              List of relations
+ Schema |     Name     |   Type   |  Owner   
+--------+--------------+----------+----------
+ public | login        | table    | postgres
+ public | login_id_seq | sequence | postgres
+ public | users        | table    | postgres
+(3 rows)
+
+test=# SELECT * FROM users JOIN login ON users.name = login.name;
+ name  | age |  birthday  | score | id | secret | name  
+-------+-----+------------+-------+----+--------+-------
+ Faran |  31 | 1999-05-15 |    50 |  1 | abc    | Faran
+ Flash |  51 | 1999-04-04 |   100 |  5 | kkk    | Flash
+ Sally |  76 | 1993-11-22 |   100 |  2 | xyz    | Sally
+(3 rows)
+
+test=# SELECT * FROM users;
+ name  | age |  birthday  | score 
+-------+-----+------------+-------
+ Faran |  31 | 1999-05-15 |    50
+ Flash |  51 | 1999-04-04 |   100
+ Sally |  76 | 1993-11-22 |   100
+ Amy   |  15 | 1935-04-04 |    88
+(4 rows)
+
+test=# DELETE FROM users WHERE name = 'Amy';
+DELETE 1
+test=# SELECT * FROM users;                 
+ name  | age |  birthday  | score 
+-------+-----+------------+-------
+ Faran |  31 | 1999-05-15 |    50
+ Flash |  51 | 1999-04-04 |   100
+ Sally |  76 | 1993-11-22 |   100
+(3 rows)
+
